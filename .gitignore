@@ -1,0 +1,17 @@
+node_modules/
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
+# SQLite Database
+prisma/dev.db
+prisma/dev.db-journal
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS metadata
+.DS_Store
+Thumbs.db

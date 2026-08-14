@@ -1,0 +1,33 @@
+1. Register User
+POST http://localhost:5000/auth/signup
+Content-Type: application/json
+
+{
+  "email": "portfolio_tester@example.com",
+  "password": "securepassword123"
+}
+
+2. Login User
+# @name login
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+  "email": "portfolio_tester@example.com",
+  "password": "securepassword123"
+}
+
+3. Create Note (Protected)
+POST http://localhost:5000/notes
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.access_token}}
+
+{
+  "title": "Mastering Node.js & Prisma",
+  "content": "Built with modular architecture and clean JWT middleware.",
+  "tags": ["nodejs", "express", "prisma"]
+}
+
+4. Get User Notes (Protected)
+GET http://localhost:5000/notes
+Authorization: Bearer {{login.response.body.access_token}}
