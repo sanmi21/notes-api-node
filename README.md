@@ -13,6 +13,7 @@ A secure, high-performance RESTful API for managing user notes, built with **Nod
 
 ## Architecture & Project Structure
 
+```text
 notes_api/
 ├── prisma/
 │ └── schema.prisma # Relational Database Models (User & Note)
