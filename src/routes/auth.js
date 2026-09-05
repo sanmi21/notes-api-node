@@ -4,7 +4,11 @@ import jwt from 'jsonwebtoken';
 import prisma from '../db.js';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'SUPER_SECRET_KEY_NOTES_API_2026';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is required');
+}
 
 // ----------------------------------
 // 1. POST /auth/signup
