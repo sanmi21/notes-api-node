@@ -17,6 +17,7 @@ The Scale 1 authentication release includes signup, password login, protected ac
 
 ## Architecture & Project Structure
 
+```text
 notes_api/
 ├── prisma/
 │ └── schema.prisma # Relational Database Models (User & Note)
