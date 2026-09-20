@@ -13,10 +13,16 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
-  notes    Note[]
+  id                     Int       @id @default(autoincrement())
+  email                  String    @unique
+  password               String
+  mfaEnabled             Boolean   @default(false)
+  mfaSecret              String?
+  passwordResetTokenHash String?
+  passwordResetExpiresAt DateTime?
+  notes                  Note[]
+
+  @@index([passwordResetTokenHash])
 }
 
 model Note {
@@ -32,11 +38,17 @@ model Note {
 }
 
 model NoteImage {
-  id        Int      @id @default(autoincrement())
-  url       String   // e.g. "/uploads/image-1723456789.png"
-  fileSize  Int      // Size in bytes
-  mimeType  String   // e.g. "image/png", "image/jpeg"
-  noteId    Int
-  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  url          String   // Legacy/provider URL; API responses use the protected route
+  provider     String   @default("local")
+  key          String?
+  originalName String?
+  fileSize     Int
+  mimeType     String
+  resourceType String?
+  metadata     String   @default("{}")
+  uploadType   String   @default("note-image")
+  noteId       Int
+  note         Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
 }

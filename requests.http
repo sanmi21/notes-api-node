@@ -1,33 +1,85 @@
-1. Register User
-POST http://localhost:5000/auth/signup
+@baseUrl = http://localhost:5000
+@email = mentor@example.com
+@password = correct-password
+
+### 1. Create an account
+POST {{baseUrl}}/auth/signup
 Content-Type: application/json
 
 {
-  "email": "portfolio_tester@example.com",
-  "password": "securepassword123"
+  "email": "{{email}}",
+  "password": "{{password}}"
 }
 
-2. Login User
+### 2. Log in without MFA
 # @name login
-POST http://localhost:5000/auth/login
+POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "portfolio_tester@example.com",
-  "password": "securepassword123"
+  "email": "{{email}}",
+  "password": "{{password}}"
 }
 
-3. Create Note (Protected)
-POST http://localhost:5000/notes
-Content-Type: application/json
+### 3. Prove the access token works
+GET {{baseUrl}}/auth/me
 Authorization: Bearer {{login.response.body.access_token}}
+
+### 4. Ask for a password reset
+# Set AUTH_EXPOSE_TEST_TOKENS=true locally to receive reset_token in this response.
+# @name forgotPassword
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
 
 {
-  "title": "Mastering Node.js & Prisma",
-  "content": "Built with modular architecture and clean JWT middleware.",
-  "tags": ["nodejs", "express", "prisma"]
+  "email": "{{email}}"
 }
 
-4. Get User Notes (Protected)
-GET http://localhost:5000/notes
+### 5. Reset the password
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "{{forgotPassword.response.body.reset_token}}",
+  "password": "new-correct-password"
+}
+
+### 6. Start MFA setup
+# Log in again first if the password was changed above, then replace this token as needed.
+POST {{baseUrl}}/auth/mfa/setup
 Authorization: Bearer {{login.response.body.access_token}}
+
+### 7. Confirm and enable MFA
+# Replace 123456 with the current code from your authenticator app.
+POST {{baseUrl}}/auth/mfa/enable
+Authorization: Bearer {{login.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "code": "123456"
+}
+
+### 8. Log in after MFA is enabled
+# @name mfaLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "new-correct-password"
+}
+
+### 9. Finish MFA login
+# Replace 123456 with the current authenticator code.
+# @name finishMfa
+POST {{baseUrl}}/auth/mfa/verify
+Content-Type: application/json
+
+{
+  "mfa_token": "{{mfaLogin.response.body.mfa_token}}",
+  "code": "123456"
+}
+
+### 10. Use the access token issued after MFA
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{finishMfa.response.body.access_token}}
