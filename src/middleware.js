@@ -1,18 +1,39 @@
-import jwt from "jsonwebtoken";
+import prisma from './db.js';
+import {verifyToken} from './auth/tokens.js';
 
-export function authenticateToken(req, res, next){
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+export function authenticateToken(req, res, next) {
+    const authHeader = req.get('authorization');
+    const match = typeof authHeader === 'string' && authHeader.match(/^Bearer ([^\s]+)$/);
+    const token = match?.[1];
 
     if (!token) {
         return res.status(401).json({ error: 'Access token required' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET || 'SUPER_SECRET_KEY_NOTES_API_2026', (err, payload) => {
-        if (err) {
-            return res.status(403).json({ error: 'Invalid or expired token' });
-        }
-        req.user = payload;
+    try {
+        req.user = verifyToken(token, 'access');
         next();
+    } catch {
+        return res.status(401).json({ error: 'Invalid or expired access token' });
+    }
+}
+
+export async function verifyNoteOwnership(req, res, next) {
+    const noteId = Number(req.params.id);
+
+    if (!Number.isInteger(noteId) || noteId <= 0) {
+    return res.status(400).json({ error: 'Invalid note ID' });
+    }
+
+    const existingNote = await prisma.note.findFirst({
+        where: {id: noteId, userId: req.user.userId}
     });
+
+
+    if (!existingNote) {
+    return res.status(404).json({ error: 'Note not found' });
+    }
+
+    req.note = existingNote;
+    next();
 }
